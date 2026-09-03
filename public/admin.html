@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Live Polling Quiz</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Create a Poll</h1>
+
+        <form id="pollForm">
+
+            <label for="question">Question</label>
+
+            <input
+                type="text"
+                id="question"
+                placeholder="Enter your question"
+                required
+            >
+
+            <h3>Answer Options</h3>
+
+            <div id="optionsContainer">
+
+                <div class="option-row">
+                    <input
+                        type="text"
+                        class="option-input"
+                        placeholder="Option 1"
+                        required
+                    >
+                </div>
+
+                <div class="option-row">
+                    <input
+                        type="text"
+                        class="option-input"
+                        placeholder="Option 2"
+                        required
+                    >
+                </div>
+
+            </div>
+
+            <button type="button" id="addOption">
+                + Add Option
+            </button>
+
+            <button type="submit">
+                Create Poll
+            </button>
+
+        </form>
+
+        <div id="message"></div>
+
+    </div>
+
+    <script src="admin.js"></script>
+
+</body>
+</html>
