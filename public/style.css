@@ -510,3 +510,63 @@ hr {
         transform: scale(1.08);
     }
 }
+#participantTimer {
+    text-align: center;
+    font-size: 36px;
+    font-weight: 800;
+    margin: 20px 0;
+    letter-spacing: 3px;
+}
+
+#participantTimer.warning {
+    color: #f59e0b;
+}
+
+#participantTimer.danger {
+    color: #ef4444;
+    animation: timerPulse 1s infinite;
+}
+/* PARTICIPANT VOTING TIMER */
+
+#participantTimer {
+    display: block !important;
+    visibility: visible !important;
+
+    text-align: center;
+
+    font-size: 40px;
+
+    font-weight: 800;
+
+    margin: 20px 0;
+
+    padding: 10px;
+
+    letter-spacing: 3px;
+
+    color: #a78bfa;
+
+    min-height: 50px;
+}
+
+#participantTimer.warning {
+    color: #f59e0b !important;
+}
+
+#participantTimer.danger {
+    color: #ef4444 !important;
+
+    animation: timerPulse 1s infinite;
+}
+
+@keyframes timerPulse {
+
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08);
+    }
+
+}

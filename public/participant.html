@@ -5,17 +5,13 @@
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Join Poll - PulseVote</title>
 
     <link rel="stylesheet" href="/style.css">
 
     <style>
-
         /* PARTICIPANT HEADER */
 
         .participant-badge {
@@ -203,7 +199,6 @@
             }
 
         }
-
     </style>
 
 </head>
@@ -236,33 +231,20 @@
 
             <form id="joinForm">
 
-<label for="participantName">
-    Your Name
-</label>
+                <label for="participantName">
+                    Your Name
+                </label>
 
-<input
-    type="text"
-    id="participantName"
-    placeholder="Enter your name"
-    maxlength="30"
-    autocomplete="name"
-    required
->
+                <input type="text" id="participantName" placeholder="Enter your name" maxlength="30" autocomplete="name"
+                    required>
 
 
                 <label for="roomCode">
                     Room Code
                 </label>
 
-                 <input
-                    type="text"
-                    id="roomCode"
-                    placeholder="ABC123"
-                    maxlength="6"
-                    autocomplete="off"
-                    required
->
-                
+                <input type="text" id="roomCode" placeholder="ABC123" maxlength="6" autocomplete="off" required>
+
 
 
                 <button type="submit">
@@ -278,10 +260,7 @@
 
         <!-- WAITING SECTION -->
 
-        <div
-            id="waitingSection"
-            style="display: none;"
-        >
+        <div id="waitingSection" style="display: none;">
 
             <div class="waiting-icon">
                 ⏳
@@ -320,18 +299,34 @@
 
         <!-- VOTING SECTION -->
 
-        <div
-            id="votingSection"
-            style="display: none;"
-        >
+        <div id="votingSection" style="display: none;">
 
             <div class="participant-badge">
                 LIVE VOTING
             </div>
 
+            <div
+                 id="participantTimer"
+                style="
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    text-align: center;
+                    font-size: 40px;
+                    font-weight: 800;
+                    margin: 20px 0;
+                    padding: 10px;
+                    color: #a78bfa;
+                    letter-spacing: 3px;
+                    min-height: 50px;
+                "
+            >
+                00:30
+            </div>
 
             <h2 id="question">
             </h2>
+
 
 
             <div id="votingOptions">
@@ -347,10 +342,7 @@
 
         <!-- RESULTS SECTION -->
 
-        <div
-            id="resultsSection"
-            style="display: none;"
-        >
+        <div id="resultsSection" style="display: none;">
 
             <hr>
 
@@ -369,12 +361,10 @@
             </div>
 
 
-            <p
-                style="
+            <p style="
                     text-align: center;
                     margin-top: 25px;
-                "
-            >
+                ">
                 Total Votes:
                 <strong id="participantTotalVotes">
                     0

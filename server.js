@@ -91,6 +91,110 @@ function generateRoomCode() {
 
 
 // ======================================
+// AUTOMATICALLY END POLL
+// ======================================
+
+function endPollAutomatically(roomCode) {
+
+    const room =
+        rooms[roomCode];
+
+
+    // Room does not exist
+
+    if (!room) {
+
+        return;
+
+    }
+
+
+    // Poll already ended
+
+    if (room.ended) {
+
+        return;
+
+    }
+
+
+    // Mark poll as ended
+
+    room.ended =
+        true;
+
+
+    // Calculate total votes
+
+    const totalVotes =
+        room.votes.reduce(
+            (
+                total,
+                vote
+            ) =>
+                total + vote,
+            0
+        );
+
+
+    // Find winner
+
+    let winnerIndex =
+        -1;
+
+
+    if (totalVotes > 0) {
+
+        const highestVote =
+            Math.max(
+                ...room.votes
+            );
+
+
+        winnerIndex =
+            room.votes.indexOf(
+                highestVote
+            );
+
+    }
+
+
+    // Send final results
+    // to admin and participants
+
+    io.to(
+        roomCode
+    ).emit(
+        "pollEnded",
+        {
+
+            question:
+                room.question,
+
+            options:
+                room.options,
+
+            votes:
+                room.votes,
+
+            totalVotes:
+                totalVotes,
+
+            winnerIndex:
+                winnerIndex
+
+        }
+    );
+
+
+    console.log(
+        `Poll automatically ended: ${roomCode}`
+    );
+
+}
+
+
+// ======================================
 // SOCKET CONNECTION
 // ======================================
 
@@ -116,6 +220,8 @@ io.on(
                     generateRoomCode();
 
 
+                // Make sure code is unique
+
                 while (
                     rooms[roomCode]
                 ) {
@@ -126,8 +232,12 @@ io.on(
                 }
 
 
+                // Create room
+
                 rooms[roomCode] = {
-                    adminId: socket.id,
+
+                    adminId:
+                        socket.id,
 
                     question:
                         pollData.question,
@@ -157,13 +267,18 @@ io.on(
                         pollData.options.map(
                             () => 0
                         )
+
                 };
 
+
+                // Put admin in room
 
                 socket.join(
                     roomCode
                 );
 
+
+                // Send room information
 
                 socket.emit(
                     "pollCreated",
@@ -204,13 +319,18 @@ io.on(
                         .trim()
                         .toUpperCase();
 
+
                 const participantName =
                     data.participantName
                         ? data.participantName.trim()
                         : "";
 
+
                 const room =
                     rooms[roomCode];
+
+
+                // Room doesn't exist
 
                 if (!room) {
 
@@ -220,7 +340,11 @@ io.on(
                     );
 
                     return;
+
                 }
+
+
+                // Voting already started
 
                 if (room.started) {
 
@@ -230,7 +354,11 @@ io.on(
                     );
 
                     return;
+
                 }
+
+
+                // Poll ended
 
                 if (room.ended) {
 
@@ -240,9 +368,15 @@ io.on(
                     );
 
                     return;
+
                 }
 
-                if (participantName === "") {
+
+                // Empty name
+
+                if (
+                    participantName === ""
+                ) {
 
                     socket.emit(
                         "joinError",
@@ -250,9 +384,15 @@ io.on(
                     );
 
                     return;
+
                 }
 
-                if (participantName.length > 30) {
+
+                // Name too long
+
+                if (
+                    participantName.length > 30
+                ) {
 
                     socket.emit(
                         "joinError",
@@ -260,41 +400,59 @@ io.on(
                     );
 
                     return;
+
                 }
 
 
                 // Add participant
+
                 if (
-                    !room.participantIds
-                        .includes(socket.id)
+                    !room.participantIds.includes(
+                        socket.id
+                    )
                 ) {
 
                     room.participantIds.push(
                         socket.id
                     );
 
+
                     room.participants++;
 
+
                     // Store participant name
-                    if (!room.participantNames) {
-                        room.participantNames = {};
+
+                    if (
+                        !room.participantNames
+                    ) {
+
+                        room.participantNames =
+                            {};
+
                     }
+
 
                     room.participantNames[
                         socket.id
-                    ] = participantName;
+                    ] =
+                        participantName;
+
                 }
 
+
+                // Join Socket.IO room
 
                 socket.join(
                     roomCode
                 );
 
 
-                // Send room information to participant
+                // Send room information
+
                 socket.emit(
                     "roomJoined",
                     {
+
                         roomCode:
                             roomCode,
 
@@ -306,32 +464,40 @@ io.on(
 
                         participantName:
                             participantName
+
                     }
                 );
 
 
-                // Update admin
+                // Update admin participant count
+
                 io.to(
                     room.adminId
                 ).emit(
                     "participantCount",
                     {
+
                         count:
                             room.participants
+
                     }
                 );
 
 
-                // Send participant list to admin
+                // Send participant list
+
                 io.to(
                     room.adminId
                 ).emit(
                     "participantList",
                     {
+
                         participants:
                             Object.values(
-                                room.participantNames || {}
+                                room.participantNames ||
+                                {}
                             )
+
                     }
                 );
 
@@ -355,63 +521,114 @@ io.on(
                 const roomCode =
                     data.roomCode;
 
+
                 const room =
                     rooms[roomCode];
 
+
+                // Room not found
+
                 if (!room) {
+
                     return;
+
                 }
+
+
+                // Only admin can start
 
                 if (
                     room.adminId !==
                     socket.id
                 ) {
+
                     return;
+
                 }
+
+
+                // Already ended
 
                 if (room.ended) {
+
                     return;
+
                 }
+
+
+                // Already started
 
                 if (room.started) {
+
                     return;
+
                 }
 
 
-                // Get timer duration
-                let duration =
-                    Number(data.duration);
+                // ==================================
+                // TIMER DURATION
+                // ==================================
 
-                // Default to 30 seconds
+                let duration =
+                    Number(
+                        data.duration
+                    );
+
+
+                // Default = 30 seconds
+
                 if (
-                    !Number.isFinite(duration) ||
+                    !Number.isFinite(
+                        duration
+                    ) ||
                     duration < 10
                 ) {
-                    duration = 30;
+
+                    duration =
+                        30;
+
                 }
 
-                // Maximum 5 minutes
-                if (duration > 300) {
-                    duration = 300;
+
+                // Maximum = 300 seconds
+
+                if (
+                    duration > 300
+                ) {
+
+                    duration =
+                        300;
+
                 }
 
 
-                room.started = true;
+                // ==================================
+                // START POLL
+                // ==================================
+
+                room.started =
+                    true;
+
 
                 room.timerDuration =
                     duration;
+
 
                 room.timerEnd =
                     Date.now() +
                     duration * 1000;
 
 
-                // Tell everyone voting has started
+                // ==================================
+                // SEND POLL START EVENT
+                // ==================================
+
                 io.to(
                     roomCode
                 ).emit(
                     "pollStarted",
                     {
+
                         question:
                             room.question,
 
@@ -423,6 +640,7 @@ io.on(
 
                         timerEnd:
                             room.timerEnd
+
                     }
                 );
 
@@ -432,19 +650,34 @@ io.on(
                 );
 
 
-                // Automatically end poll
+                // ==================================
+                // AUTOMATICALLY END POLL
+                // ==================================
+
                 setTimeout(
                     () => {
 
                         const currentRoom =
                             rooms[roomCode];
 
+
                         if (
-                            !currentRoom ||
+                            !currentRoom
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        if (
                             currentRoom.ended
                         ) {
+
                             return;
+
                         }
+
 
                         endPollAutomatically(
                             roomCode
@@ -457,6 +690,7 @@ io.on(
             }
         );
 
+
         // ==================================
         // SUBMIT VOTE
         // ==================================
@@ -468,13 +702,18 @@ io.on(
                 const roomCode =
                     data.roomCode;
 
+
                 const optionIndex =
-                    data.optionIndex;
+                    Number(
+                        data.optionIndex
+                    );
 
 
                 const room =
                     rooms[roomCode];
 
+
+                // Room not found
 
                 if (!room) {
 
@@ -484,8 +723,11 @@ io.on(
                     );
 
                     return;
+
                 }
 
+
+                // Voting hasn't started
 
                 if (!room.started) {
 
@@ -495,8 +737,11 @@ io.on(
                     );
 
                     return;
+
                 }
 
+
+                // Poll ended
 
                 if (room.ended) {
 
@@ -506,15 +751,16 @@ io.on(
                     );
 
                     return;
+
                 }
 
 
                 // Check participant
+
                 if (
-                    !room.participantIds
-                        .includes(
-                            socket.id
-                        )
+                    !room.participantIds.includes(
+                        socket.id
+                    )
                 ) {
 
                     socket.emit(
@@ -523,15 +769,16 @@ io.on(
                     );
 
                     return;
+
                 }
 
 
                 // Prevent double voting
+
                 if (
-                    room.votedUsers
-                        .includes(
-                            socket.id
-                        )
+                    room.votedUsers.includes(
+                        socket.id
+                    )
                 ) {
 
                     socket.emit(
@@ -540,11 +787,16 @@ io.on(
                     );
 
                     return;
+
                 }
 
 
                 // Check option
+
                 if (
+                    !Number.isInteger(
+                        optionIndex
+                    ) ||
                     optionIndex < 0 ||
                     optionIndex >=
                     room.options.length
@@ -556,32 +808,43 @@ io.on(
                     );
 
                     return;
+
                 }
 
 
-                // Record vote
+                // ==================================
+                // RECORD VOTE
+                // ==================================
+
                 room.votes[
                     optionIndex
                 ]++;
 
 
                 // Mark participant as voted
+
                 room.votedUsers.push(
                     socket.id
                 );
 
 
-                // Confirmation
+                // Send confirmation
+
                 socket.emit(
                     "voteSubmitted",
                     {
+
                         success:
                             true
+
                     }
                 );
 
 
-                // Calculate total votes
+                // ==================================
+                // TOTAL VOTES
+                // ==================================
+
                 const totalVotes =
                     room.votes.reduce(
                         (
@@ -593,7 +856,10 @@ io.on(
                     );
 
 
-                // Send live results
+                // ==================================
+                // SEND LIVE RESULTS
+                // ==================================
+
                 io.to(
                     roomCode
                 ).emit(
@@ -620,7 +886,7 @@ io.on(
 
 
         // ==================================
-        // END POLL
+        // MANUAL END POLL
         // ==================================
 
         socket.on(
@@ -636,32 +902,53 @@ io.on(
 
 
                 if (!room) {
+
                     return;
+
                 }
 
 
-                // Only admin can end
+                // Only admin
+
                 if (
                     room.adminId !==
                     socket.id
                 ) {
+
                     return;
+
                 }
 
+
+                // Poll must have started
 
                 if (!room.started) {
+
                     return;
+
                 }
 
+
+                // Already ended
 
                 if (room.ended) {
+
                     return;
+
                 }
 
+
+                // ==================================
+                // END POLL
+                // ==================================
 
                 room.ended =
                     true;
 
+
+                // ==================================
+                // TOTAL VOTES
+                // ==================================
 
                 const totalVotes =
                     room.votes.reduce(
@@ -674,13 +961,17 @@ io.on(
                     );
 
 
+                // ==================================
+                // FIND WINNER
+                // ==================================
+
                 let winnerIndex =
                     -1;
 
 
-                // Only select winner if
-                // there are votes
-                if (totalVotes > 0) {
+                if (
+                    totalVotes > 0
+                ) {
 
                     const highestVote =
                         Math.max(
@@ -696,7 +987,10 @@ io.on(
                 }
 
 
-                // Send final results
+                // ==================================
+                // SEND FINAL RESULTS
+                // ==================================
+
                 io.to(
                     roomCode
                 ).emit(
@@ -723,7 +1017,7 @@ io.on(
 
 
                 console.log(
-                    `Poll ended: ${roomCode}`
+                    `Poll manually ended: ${roomCode}`
                 );
 
             }
@@ -753,7 +1047,8 @@ io.on(
                         rooms[roomCode];
 
 
-                    // Remove participant
+                    // Check participant
+
                     const participantIndex =
                         room.participantIds
                             .indexOf(
@@ -766,6 +1061,8 @@ io.on(
                         -1
                     ) {
 
+                        // Remove participant
+
                         room.participantIds
                             .splice(
                                 participantIndex,
@@ -776,6 +1073,22 @@ io.on(
                         room.participants--;
 
 
+                        // Remove participant name
+
+                        if (
+                            room.participantNames
+                        ) {
+
+                            delete room
+                                .participantNames[
+                                    socket.id
+                                ];
+
+                        }
+
+
+                        // Update count
+
                         io.to(
                             room.adminId
                         ).emit(
@@ -784,6 +1097,24 @@ io.on(
 
                                 count:
                                     room.participants
+
+                            }
+                        );
+
+
+                        // Update participant list
+
+                        io.to(
+                            room.adminId
+                        ).emit(
+                            "participantList",
+                            {
+
+                                participants:
+                                    Object.values(
+                                        room.participantNames ||
+                                        {}
+                                    )
 
                             }
                         );
