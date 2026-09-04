@@ -40,6 +40,9 @@ const participantCount =
         "participantCount"
     );
 
+const participantList =
+    document.getElementById("participantList");
+
 const startPollButton =
     document.getElementById(
         "startPoll"
@@ -269,6 +272,53 @@ socket.on(
 
     }
 );
+socket.on("participantList", (data) => {
+
+    participantList.innerHTML = "";
+
+    if (
+        !data.participants ||
+        data.participants.length === 0
+    ) {
+
+        participantList.innerHTML =
+            "<p>No participants joined yet.</p>";
+
+        return;
+    }
+
+    data.participants.forEach(
+        (name, index) => {
+
+            const participant =
+                document.createElement("div");
+
+            participant.style.padding =
+                "10px 14px";
+
+            participant.style.marginTop =
+                "8px";
+
+            participant.style.borderRadius =
+                "10px";
+
+            participant.style.background =
+                "rgba(255, 255, 255, 0.06)";
+
+            participant.style.border =
+                "1px solid rgba(255, 255, 255, 0.1)";
+
+            participant.textContent =
+                `${index + 1}. ${name}`;
+
+            participantList.appendChild(
+                participant
+            );
+
+        }
+    );
+
+});
 
 
 // ======================================

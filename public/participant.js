@@ -6,12 +6,30 @@ const votingSection = document.getElementById("votingSection");
 const resultsSection = document.getElementById("resultsSection");
 
 const joinForm = document.getElementById("joinForm");
-const roomCodeInput = document.getElementById("roomCode");
 
-const joinedRoomCode = document.getElementById("joinedRoomCode");
-const question = document.getElementById("question");
-const votingOptions = document.getElementById("votingOptions");
-const voteMessage = document.getElementById("voteMessage");
+const participantNameInput =
+    document.getElementById("participantName");
+
+const roomCodeInput =
+    document.getElementById("roomCode");
+
+const displayParticipantName =
+    document.getElementById("displayParticipantName");
+
+const votingParticipantName =
+    document.getElementById("votingParticipantName");
+
+const joinedRoomCode =
+    document.getElementById("joinedRoomCode");
+
+const question =
+    document.getElementById("question");
+
+const votingOptions =
+    document.getElementById("votingOptions");
+
+const voteMessage =
+    document.getElementById("voteMessage");
 
 const participantResults =
     document.getElementById("participantResults");
@@ -20,6 +38,7 @@ const participantTotalVotes =
     document.getElementById("participantTotalVotes");
 
 let currentRoomCode = "";
+let participantName = "";
 let hasVoted = false;
 
 
@@ -28,13 +47,33 @@ joinForm.addEventListener("submit", (event) => {
 
     event.preventDefault();
 
-    const roomCode = roomCodeInput.value
-        .trim()
-        .toUpperCase();
+    participantName =
+        participantNameInput.value.trim();
+
+    const roomCode =
+        roomCodeInput.value
+            .trim()
+            .toUpperCase();
+
+    if (participantName === "") {
+
+        alert("Please enter your name.");
+
+        return;
+    }
+
+    if (participantName.length > 30) {
+
+        alert("Name must be 30 characters or less.");
+
+        return;
+    }
 
     if (roomCode.length !== 6) {
 
-        alert("Please enter a 6-character room code.");
+        alert(
+            "Please enter a 6-character room code."
+        );
 
         return;
     }
@@ -42,7 +81,8 @@ joinForm.addEventListener("submit", (event) => {
     currentRoomCode = roomCode;
 
     socket.emit("joinRoom", {
-        roomCode: roomCode
+        roomCode: roomCode,
+        participantName: participantName
     });
 
 });
@@ -51,14 +91,27 @@ joinForm.addEventListener("submit", (event) => {
 // SUCCESSFULLY JOINED
 socket.on("roomJoined", (data) => {
 
-    currentRoomCode = data.roomCode;
+    currentRoomCode =
+        data.roomCode;
 
     joinedRoomCode.textContent =
         data.roomCode;
 
-    joinSection.style.display = "none";
+    if (displayParticipantName) {
+        displayParticipantName.textContent =
+            participantName;
+    }
 
-    waitingSection.style.display = "block";
+    if (votingParticipantName) {
+        votingParticipantName.textContent =
+            participantName;
+    }
+
+    joinSection.style.display =
+        "none";
+
+    waitingSection.style.display =
+        "block";
 
 });
 
@@ -73,33 +126,45 @@ socket.on("pollStarted", (data) => {
 
     votingOptions.innerHTML = "";
 
+    voteMessage.textContent =
+        "Choose one option to vote.";
+
     data.options.forEach((option, index) => {
 
         const button =
             document.createElement("button");
 
-        button.textContent = option;
+        button.textContent =
+            option;
 
         button.className =
             "vote-button";
 
-        button.addEventListener("click", () => {
+        button.addEventListener(
+            "click",
+            () => {
+                vote(index);
+            }
+        );
 
-            vote(index);
-
-        });
-
-        votingOptions.appendChild(button);
+        votingOptions.appendChild(
+            button
+        );
 
     });
 
-    waitingSection.style.display = "none";
+    waitingSection.style.display =
+        "none";
 
-    votingSection.style.display = "block";
+    votingSection.style.display =
+        "block";
 
-    resultsSection.style.display = "block";
+    resultsSection.style.display =
+        "block";
 
-    createParticipantResults(data.options);
+    createParticipantResults(
+        data.options
+    );
 
 });
 
@@ -119,10 +184,15 @@ function createParticipantResults(options) {
 
         resultItem.innerHTML = `
             <div class="result-header">
+
                 <span>${option}</span>
-                <strong id="participant-vote-${index}">
+
+                <strong
+                    id="participant-vote-${index}"
+                >
                     0
                 </strong>
+
             </div>
 
             <div class="bar-background">
@@ -130,8 +200,8 @@ function createParticipantResults(options) {
                 <div
                     class="bar"
                     id="participant-bar-${index}"
-                    style="width: 0%;">
-                </div>
+                    style="width: 0%;"
+                ></div>
 
             </div>
         `;
@@ -153,7 +223,9 @@ function vote(optionIndex) {
     }
 
     const buttons =
-        document.querySelectorAll(".vote-button");
+        document.querySelectorAll(
+            ".vote-button"
+        );
 
     buttons.forEach(button => {
 
@@ -240,7 +312,9 @@ socket.on("resultsUpdated", (data) => {
 socket.on("pollEnded", (data) => {
 
     const buttons =
-        document.querySelectorAll(".vote-button");
+        document.querySelectorAll(
+            ".vote-button"
+        );
 
     buttons.forEach(button => {
 
@@ -282,14 +356,14 @@ socket.on("pollEnded", (data) => {
 
         }
 
-        // Highlight winner
         if (
             index === data.winnerIndex &&
             data.totalVotes > 0
         ) {
 
             const resultItem =
-                voteBar.parentElement.parentElement;
+                voteBar.parentElement
+                    .parentElement;
 
             resultItem.style.fontWeight =
                 "bold";

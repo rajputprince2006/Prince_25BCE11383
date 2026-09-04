@@ -127,37 +127,37 @@ io.on(
 
 
                 rooms[roomCode] = {
+    adminId: socket.id,
 
-                    adminId:
-                        socket.id,
+    question:
+        pollData.question,
 
-                    question:
-                        pollData.question,
+    options:
+        pollData.options,
 
-                    options:
-                        pollData.options,
+    participants:
+        0,
 
-                    participants:
-                        0,
+    participantIds:
+        [],
 
-                    participantIds:
-                        [],
+    participantNames:
+        {},
 
-                    votedUsers:
-                        [],
+    votedUsers:
+        [],
 
-                    started:
-                        false,
+    started:
+        false,
 
-                    ended:
-                        false,
+    ended:
+        false,
 
-                    votes:
-                        pollData.options.map(
-                            () => 0
-                        )
-
-                };
+    votes:
+        pollData.options.map(
+            () => 0
+        )
+};
 
 
                 socket.join(
@@ -196,109 +196,152 @@ io.on(
         // ==================================
 
         socket.on(
-            "joinRoom",
-            (data) => {
+    "joinRoom",
+    (data) => {
 
-                const roomCode =
-                    data.roomCode
-                        .trim()
-                        .toUpperCase();
+        const roomCode =
+            data.roomCode
+                .trim()
+                .toUpperCase();
 
+        const participantName =
+            data.participantName
+                ? data.participantName.trim()
+                : "";
 
-                const room =
-                    rooms[roomCode];
+        const room =
+            rooms[roomCode];
 
+        if (!room) {
 
-                if (!room) {
+            socket.emit(
+                "joinError",
+                "Room not found. Please check the room code."
+            );
 
-                    socket.emit(
-                        "joinError",
-                        "Room not found. Please check the room code."
-                    );
+            return;
+        }
 
-                    return;
-                }
+        if (room.started) {
 
+            socket.emit(
+                "joinError",
+                "Voting has already started."
+            );
 
-                if (room.started) {
+            return;
+        }
 
-                    socket.emit(
-                        "joinError",
-                        "Voting has already started."
-                    );
+        if (room.ended) {
 
-                    return;
-                }
+            socket.emit(
+                "joinError",
+                "This poll has ended."
+            );
 
+            return;
+        }
 
-                if (room.ended) {
+        if (participantName === "") {
 
-                    socket.emit(
-                        "joinError",
-                        "This poll has ended."
-                    );
+            socket.emit(
+                "joinError",
+                "Please enter your name."
+            );
 
-                    return;
-                }
+            return;
+        }
 
+        if (participantName.length > 30) {
 
-                if (
-                    !room.participantIds
-                        .includes(
-                            socket.id
-                        )
-                ) {
+            socket.emit(
+                "joinError",
+                "Name must be 30 characters or less."
+            );
 
-                    room.participantIds.push(
-                        socket.id
-                    );
-
-                    room.participants++;
-
-                }
-
-
-                socket.join(
-                    roomCode
-                );
-
-
-                socket.emit(
-                    "roomJoined",
-                    {
-
-                        roomCode:
-                            roomCode,
-
-                        question:
-                            room.question,
-
-                        options:
-                            room.options
-
-                    }
-                );
+            return;
+        }
 
 
-                io.to(
-                    room.adminId
-                ).emit(
-                    "participantCount",
-                    {
+        // Add participant
+        if (
+            !room.participantIds
+                .includes(socket.id)
+        ) {
 
-                        count:
-                            room.participants
+            room.participantIds.push(
+                socket.id
+            );
 
-                    }
-                );
+            room.participants++;
+
+            // Store participant name
+            if (!room.participantNames) {
+                room.participantNames = {};
+            }
+
+            room.participantNames[
+                socket.id
+            ] = participantName;
+        }
 
 
-                console.log(
-                    `Participant joined ${roomCode}. Total: ${room.participants}`
-                );
+        socket.join(
+            roomCode
+        );
 
+
+        // Send room information to participant
+        socket.emit(
+            "roomJoined",
+            {
+                roomCode:
+                    roomCode,
+
+                question:
+                    room.question,
+
+                options:
+                    room.options,
+
+                participantName:
+                    participantName
             }
         );
+
+
+        // Update admin
+        io.to(
+            room.adminId
+        ).emit(
+            "participantCount",
+            {
+                count:
+                    room.participants
+            }
+        );
+
+
+        // Send participant list to admin
+        io.to(
+            room.adminId
+        ).emit(
+            "participantList",
+            {
+                participants:
+                    Object.values(
+                        room.participantNames || {}
+                    )
+            }
+        );
+
+
+        console.log(
+            `Participant joined ${roomCode}: ${participantName}. Total: ${room.participants}`
+        );
+
+    }
+);  
 
 
         // ==================================
