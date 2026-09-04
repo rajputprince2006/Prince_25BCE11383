@@ -544,6 +544,9 @@ socket.on(
     "pollEnded",
     (data) => {
 
+        clearInterval(timerInterval);
+        timerDisplay.textContent = "00:00";
+        timerDisplay.classList.remove("warning", "danger");
         resultsQuestion.textContent =
             "Final Results";
 
