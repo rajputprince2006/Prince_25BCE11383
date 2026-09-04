@@ -2,76 +2,80 @@ const socket = io();
 
 
 // ======================================
-// GET HTML ELEMENTS
+// ELEMENTS
 // ======================================
 
+const pollForm =
+    document.getElementById("pollForm");
+
+const questionInput =
+    document.getElementById("question");
+
 const optionsContainer =
-    document.getElementById(
-        "optionsContainer"
-    );
+    document.getElementById("optionsContainer");
 
 const addOptionButton =
-    document.getElementById(
-        "addOption"
-    );
+    document.getElementById("addOption");
 
-const pollForm =
-    document.getElementById(
-        "pollForm"
-    );
+const createSection =
+    document.getElementById("createSection");
 
-const message =
-    document.getElementById(
-        "message"
-    );
+const waitingSection =
+    document.getElementById("waitingSection");
 
-const waitingRoom =
-    document.getElementById(
-        "waitingRoom"
-    );
+const liveSection =
+    document.getElementById("liveSection");
 
-const roomCodeDisplay =
-    document.getElementById(
-        "roomCodeDisplay"
-    );
+const finalSection =
+    document.getElementById("finalSection");
 
-const participantCount =
-    document.getElementById(
-        "participantCount"
-    );
+const roomCodeElement =
+    document.getElementById("roomCode");
 
-const participantList =
+const copyRoomCodeButton =
+    document.getElementById("copyRoomCode");
+
+const participantCountElement =
+    document.getElementById("participantCount");
+
+const participantListElement =
     document.getElementById("participantList");
 
+const previewQuestion =
+    document.getElementById("previewQuestion");
+
+const previewOptions =
+    document.getElementById("previewOptions");
+
+const timerDurationInput =
+    document.getElementById("timerDuration");
+
 const startPollButton =
-    document.getElementById(
-        "startPoll"
-    );
+    document.getElementById("startPoll");
 
-const results =
-    document.getElementById(
-        "results"
-    );
+const timerDisplay =
+    document.getElementById("timerDisplay");
 
-const resultsQuestion =
-    document.getElementById(
-        "resultsQuestion"
-    );
+const liveQuestion =
+    document.getElementById("liveQuestion");
 
 const resultsContainer =
-    document.getElementById(
-        "resultsContainer"
-    );
+    document.getElementById("results");
 
-const totalVotes =
-    document.getElementById(
-        "totalVotes"
-    );
+const totalVotesElement =
+    document.getElementById("totalVotes");
 
 const endPollButton =
-    document.getElementById(
-        "endPoll"
-    );
+    document.getElementById("endPoll");
+
+const finalQuestion =
+    document.getElementById("finalQuestion");
+
+const finalResults =
+    document.getElementById("finalResults");
+
+const finalTotalVotes =
+    document.getElementById("finalTotalVotes");
 
 
 // ======================================
@@ -80,7 +84,9 @@ const endPollButton =
 
 let optionCount = 2;
 
-let currentRoomCode = "";
+let roomCode = "";
+
+let timerInterval = null;
 
 let currentOptions = [];
 
@@ -95,8 +101,9 @@ addOptionButton.addEventListener(
 
         if (optionCount >= 6) {
 
-            message.textContent =
-                "Maximum 6 options allowed.";
+            alert(
+                "You can have a maximum of 6 options."
+            );
 
             return;
         }
@@ -106,10 +113,7 @@ addOptionButton.addEventListener(
 
 
         const optionRow =
-            document.createElement(
-                "div"
-            );
-
+            document.createElement("div");
 
         optionRow.className =
             "option-row";
@@ -124,6 +128,13 @@ addOptionButton.addEventListener(
                 required
             >
 
+            <button
+                type="button"
+                class="remove-option"
+            >
+                Remove
+            </button>
+
         `;
 
 
@@ -132,10 +143,112 @@ addOptionButton.addEventListener(
         );
 
 
-        message.textContent = "";
+        updateRemoveButtons();
 
     }
 );
+
+
+// ======================================
+// REMOVE OPTION
+// ======================================
+
+optionsContainer.addEventListener(
+    "click",
+    (event) => {
+
+        if (
+            !event.target.classList.contains(
+                "remove-option"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        if (optionCount <= 2) {
+
+            alert(
+                "You must have at least 2 options."
+            );
+
+            return;
+        }
+
+
+        event.target
+            .parentElement
+            .remove();
+
+
+        optionCount--;
+
+
+        updateOptionPlaceholders();
+
+        updateRemoveButtons();
+
+    }
+);
+
+
+// ======================================
+// UPDATE PLACEHOLDERS
+// ======================================
+
+function updateOptionPlaceholders() {
+
+    const inputs =
+        document.querySelectorAll(
+            ".option-input"
+        );
+
+
+    inputs.forEach(
+        (input, index) => {
+
+            input.placeholder =
+                `Option ${index + 1}`;
+
+        }
+    );
+
+}
+
+
+// ======================================
+// UPDATE REMOVE BUTTONS
+// ======================================
+
+function updateRemoveButtons() {
+
+    const buttons =
+        document.querySelectorAll(
+            ".remove-option"
+        );
+
+
+    buttons.forEach(
+        (button) => {
+
+            if (optionCount <= 2) {
+
+                button.style.display =
+                    "none";
+
+            } else {
+
+                button.style.display =
+                    "inline-block";
+
+            }
+
+        }
+    );
+
+}
 
 
 // ======================================
@@ -150,12 +263,7 @@ pollForm.addEventListener(
 
 
         const question =
-            document
-                .getElementById(
-                    "question"
-                )
-                .value
-                .trim();
+            questionInput.value.trim();
 
 
         const optionInputs =
@@ -169,40 +277,78 @@ pollForm.addEventListener(
                 optionInputs
             )
                 .map(
-                    input =>
+                    (input) =>
                         input.value.trim()
                 )
                 .filter(
-                    option =>
+                    (option) =>
                         option !== ""
                 );
 
 
+        // Validate question
+
         if (question === "") {
 
-            message.textContent =
-                "Please enter a question.";
+            alert(
+                "Please enter a question."
+            );
 
             return;
         }
 
+
+        // Validate options
 
         if (options.length < 2) {
 
-            message.textContent =
-                "Please provide at least 2 options.";
+            alert(
+                "Please enter at least 2 options."
+            );
 
             return;
         }
 
 
-        currentOptions =
-            options;
+        if (options.length > 6) {
+
+            alert(
+                "Maximum 6 options are allowed."
+            );
+
+            return;
+        }
 
 
-        message.textContent =
-            "Creating poll...";
+        // Check duplicate options
 
+        const lowerCaseOptions =
+            options.map(
+                (option) =>
+                    option.toLowerCase()
+            );
+
+
+        const uniqueOptions =
+            new Set(
+                lowerCaseOptions
+            );
+
+
+        if (
+            uniqueOptions.size !==
+            options.length
+        ) {
+
+            alert(
+                "Please make sure all options are different."
+            );
+
+            return;
+        }
+
+
+        // Send to server
 
         socket.emit(
             "createPoll",
@@ -217,6 +363,11 @@ pollForm.addEventListener(
             }
         );
 
+
+        console.log(
+            "Creating poll..."
+        );
+
     }
 );
 
@@ -227,33 +378,147 @@ pollForm.addEventListener(
 
 socket.on(
     "pollCreated",
-    (poll) => {
+    (data) => {
 
-        currentRoomCode =
-            poll.roomCode;
+        console.log(
+            "Poll created:",
+            data
+        );
+
+
+        roomCode =
+            data.roomCode;
+
 
         currentOptions =
-            poll.options;
+            data.options;
 
 
-        roomCodeDisplay.textContent =
-            poll.roomCode;
+        // Hide creation section
 
-
-        participantCount.textContent =
-            "0";
-
-
-        waitingRoom.style.display =
-            "block";
-
-
-        pollForm.style.display =
+        createSection.style.display =
             "none";
 
 
-        message.textContent =
-            "Poll created successfully!";
+        // Show waiting room
+
+        waitingSection.style.display =
+            "block";
+
+
+        // Show room code
+
+        roomCodeElement.textContent =
+            data.roomCode;
+
+
+        // Show question
+
+        previewQuestion.textContent =
+            data.question;
+
+
+        // Show options
+
+        previewOptions.innerHTML =
+            "";
+
+
+        data.options.forEach(
+            (option, index) => {
+
+                const optionElement =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                optionElement.className =
+                    "preview-option";
+
+
+                optionElement.textContent =
+                    `${index + 1}. ${option}`;
+
+
+                previewOptions.appendChild(
+                    optionElement
+                );
+
+            }
+        );
+
+
+        // Reset participant count
+
+        participantCountElement.textContent =
+            "0";
+
+
+        // Reset participant list
+
+        participantListElement.innerHTML =
+            `
+
+            <p class="empty-participants">
+                Waiting for participants to join...
+            </p>
+
+            `;
+
+
+        console.log(
+            "Waiting room ready."
+        );
+
+    }
+);
+
+
+// ======================================
+// COPY ROOM CODE
+// ======================================
+
+copyRoomCodeButton.addEventListener(
+    "click",
+    async () => {
+
+        if (!roomCode) {
+
+            return;
+
+        }
+
+
+        try {
+
+            await navigator.clipboard.writeText(
+                roomCode
+            );
+
+
+            copyRoomCodeButton.textContent =
+                "Copied!";
+
+
+            setTimeout(
+                () => {
+
+                    copyRoomCodeButton.textContent =
+                        "Copy Room Code";
+
+                },
+                1500
+            );
+
+
+        } catch (error) {
+
+            alert(
+                `Room Code: ${roomCode}`
+            );
+
+        }
 
     }
 );
@@ -267,132 +532,260 @@ socket.on(
     "participantCount",
     (data) => {
 
-        participantCount.textContent =
+        console.log(
+            "Participant count:",
+            data.count
+        );
+
+
+        participantCountElement.textContent =
             data.count;
 
     }
 );
-socket.on("participantList", (data) => {
 
-    participantList.innerHTML = "";
 
-    if (
-        !data.participants ||
-        data.participants.length === 0
-    ) {
+// ======================================
+// PARTICIPANT LIST
+// ======================================
 
-        participantList.innerHTML =
-            "<p>No participants joined yet.</p>";
+socket.on(
+    "participantList",
+    (data) => {
 
-        return;
-    }
+        console.log(
+            "Participant list:",
+            data.participants
+        );
 
-    data.participants.forEach(
-        (name, index) => {
 
-            const participant =
-                document.createElement("div");
+        participantListElement.innerHTML =
+            "";
 
-            participant.style.padding =
-                "10px 14px";
 
-            participant.style.marginTop =
-                "8px";
+        if (
+            !data.participants ||
+            data.participants.length === 0
+        ) {
 
-            participant.style.borderRadius =
-                "10px";
+            participantListElement.innerHTML =
+                `
 
-            participant.style.background =
-                "rgba(255, 255, 255, 0.06)";
+                <p class="empty-participants">
+                    Waiting for participants to join...
+                </p>
 
-            participant.style.border =
-                "1px solid rgba(255, 255, 255, 0.1)";
+                `;
 
-            participant.textContent =
-                `${index + 1}. ${name}`;
-
-            participantList.appendChild(
-                participant
-            );
-
+            return;
         }
-    );
 
-});
+
+        data.participants.forEach(
+            (name, index) => {
+
+                const participant =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                participant.className =
+                    "participant-item";
+
+
+                participant.innerHTML =
+                    `
+
+                    <span class="participant-number">
+                        ${index + 1}
+                    </span>
+
+                    <span class="participant-name">
+                        ${escapeHtml(name)}
+                    </span>
+
+                    `;
+
+
+                participantListElement.appendChild(
+                    participant
+                );
+
+            }
+        );
+
+    }
+);
+
+
+// ======================================
+// ESCAPE HTML
+// ======================================
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        text;
+
+
+    return div.innerHTML;
+
+}
 
 
 // ======================================
 // BEGIN VOTING
 // ======================================
 
-const timerDuration =
-    document.getElementById("timerDuration");
+startPollButton.addEventListener(
+    "click",
+    () => {
 
-const timerDisplay =
-    document.getElementById("timerDisplay");
+        if (!roomCode) {
 
-let timerInterval = null;
+            alert(
+                "Room is not ready."
+            );
+
+            return;
+        }
 
 
-startPollButton.addEventListener("click", () => {
+        let duration =
+            Number(
+                timerDurationInput.value
+            );
 
-    if (!currentRoomCode) {
-        return;
+
+        if (
+            !Number.isFinite(
+                duration
+            )
+        ) {
+
+            duration =
+                30;
+
+        }
+
+
+        if (duration < 10) {
+
+            alert(
+                "Voting time must be at least 10 seconds."
+            );
+
+            return;
+
+        }
+
+
+        if (duration > 300) {
+
+            alert(
+                "Voting time cannot exceed 300 seconds."
+            );
+
+            return;
+
+        }
+
+
+        startPollButton.disabled =
+            true;
+
+
+        socket.emit(
+            "startPoll",
+            {
+
+                roomCode:
+                    roomCode,
+
+                duration:
+                    duration
+
+            }
+        );
+
+
+        console.log(
+            "Starting poll:",
+            duration,
+            "seconds"
+        );
+
     }
-
-    let duration =
-        Number(timerDuration.value);
-
-    if (!Number.isFinite(duration)) {
-        duration = 30;
-    }
-
-    if (duration < 10) {
-        duration = 10;
-    }
-
-    if (duration > 300) {
-        duration = 300;
-    }
-
-    socket.emit("startPoll", {
-        roomCode: currentRoomCode,
-        duration: duration
-    });
-
-    startPollButton.disabled = true;
-    startPollButton.textContent =
-        "Voting Started";
-
-    timerDuration.disabled = true;
-
-    results.style.display = "block";
-
-    resultsQuestion.textContent =
-        "Live voting results";
-
-    createResultBars();
-
-});
-
-
-socket.on("pollStarted", (data) => {
-    startCountdown(data.duration);
-});
-
+);
 
 
 // ======================================
-// CREATE RESULT BARS
+// POLL STARTED
 // ======================================
 
-function createResultBars() {
+socket.on(
+    "pollStarted",
+    (data) => {
+
+        console.log(
+            "Poll started:",
+            data
+        );
+
+
+        // Hide waiting room
+
+        waitingSection.style.display =
+            "none";
+
+
+        // Show live section
+
+        liveSection.style.display =
+            "block";
+
+
+        // Set question
+
+        liveQuestion.textContent =
+            data.question;
+
+
+        // Create results
+
+        createResults(
+            data.options
+        );
+
+
+        // Start countdown
+
+        startCountdown(
+            data.duration
+        );
+
+    }
+);
+
+
+// ======================================
+// CREATE LIVE RESULTS
+// ======================================
+
+function createResults(options) {
 
     resultsContainer.innerHTML =
         "";
 
 
-    currentOptions.forEach(
+    options.forEach(
         (option, index) => {
 
             const resultItem =
@@ -405,12 +798,13 @@ function createResultBars() {
                 "result-item";
 
 
-            resultItem.innerHTML = `
+            resultItem.innerHTML =
+                `
 
                 <div class="result-header">
 
                     <span>
-                        ${option}
+                        ${escapeHtml(option)}
                     </span>
 
                     <strong
@@ -420,7 +814,6 @@ function createResultBars() {
                     </strong>
 
                 </div>
-
 
                 <div class="bar-background">
 
@@ -432,7 +825,7 @@ function createResultBars() {
 
                 </div>
 
-            `;
+                `;
 
 
             resultsContainer.appendChild(
@@ -442,18 +835,28 @@ function createResultBars() {
         }
     );
 
+
+    totalVotesElement.textContent =
+        "0";
+
 }
 
 
 // ======================================
-// LIVE RESULTS
+// UPDATE LIVE RESULTS
 // ======================================
 
 socket.on(
     "resultsUpdated",
     (data) => {
 
-        totalVotes.textContent =
+        console.log(
+            "Results updated:",
+            data
+        );
+
+
+        totalVotesElement.textContent =
             data.totalVotes;
 
 
@@ -482,13 +885,21 @@ socket.on(
 
                 if (voteBar) {
 
-                    const percentage =
-                        data.totalVotes === 0
-                            ? 0
-                            : (
+                    let percentage =
+                        0;
+
+
+                    if (
+                        data.totalVotes > 0
+                    ) {
+
+                        percentage =
+                            (
                                 vote /
                                 data.totalVotes
                             ) * 100;
+
+                    }
 
 
                     voteBar.style.width =
@@ -504,33 +915,156 @@ socket.on(
 
 
 // ======================================
-// END POLL
+// COUNTDOWN TIMER
+// ======================================
+
+function startCountdown(seconds) {
+
+    clearInterval(
+        timerInterval
+    );
+
+
+    let remaining =
+        Number(seconds);
+
+
+    if (
+        !Number.isFinite(
+            remaining
+        )
+    ) {
+
+        remaining =
+            30;
+
+    }
+
+
+    function updateTimer() {
+
+        const minutes =
+            Math.floor(
+                remaining / 60
+            );
+
+
+        const secondsLeft =
+            remaining % 60;
+
+
+        timerDisplay.textContent =
+            `${String(minutes).padStart(2, "0")}:${String(secondsLeft).padStart(2, "0")}`;
+
+
+        if (
+            remaining <= 10
+        ) {
+
+            timerDisplay.classList.add(
+                "danger"
+            );
+
+
+            timerDisplay.classList.remove(
+                "warning"
+            );
+
+        } else if (
+            remaining <= 20
+        ) {
+
+            timerDisplay.classList.add(
+                "warning"
+            );
+
+
+            timerDisplay.classList.remove(
+                "danger"
+            );
+
+        } else {
+
+            timerDisplay.classList.remove(
+                "warning",
+                "danger"
+            );
+
+        }
+
+
+        if (
+            remaining <= 0
+        ) {
+
+            clearInterval(
+                timerInterval
+            );
+
+
+            timerDisplay.textContent =
+                "00:00";
+
+
+            return;
+
+        }
+
+
+        remaining--;
+
+    }
+
+
+    updateTimer();
+
+
+    timerInterval =
+        setInterval(
+            updateTimer,
+            1000
+        );
+
+}
+
+
+// ======================================
+// END POLL BUTTON
 // ======================================
 
 endPollButton.addEventListener(
     "click",
     () => {
 
-        if (!currentRoomCode) {
+        if (!roomCode) {
+
             return;
+
+        }
+
+
+        const confirmation =
+            confirm(
+                "Are you sure you want to end the poll?"
+            );
+
+
+        if (!confirmation) {
+
+            return;
+
         }
 
 
         socket.emit(
             "endPoll",
             {
+
                 roomCode:
-                    currentRoomCode
+                    roomCode
+
             }
         );
-
-
-        endPollButton.disabled =
-            true;
-
-
-        endPollButton.textContent =
-            "Poll Ended";
 
     }
 );
@@ -544,158 +1078,211 @@ socket.on(
     "pollEnded",
     (data) => {
 
-        clearInterval(timerInterval);
-        timerDisplay.textContent = "00:00";
-        timerDisplay.classList.remove("warning", "danger");
-        resultsQuestion.textContent =
-            "Final Results";
+        console.log(
+            "Poll ended:",
+            data
+        );
 
 
-        totalVotes.textContent =
+        // Stop timer
+
+        clearInterval(
+            timerInterval
+        );
+
+
+        timerDisplay.textContent =
+            "00:00";
+
+
+        timerDisplay.classList.remove(
+            "warning",
+            "danger"
+        );
+
+
+        // Hide live section
+
+        liveSection.style.display =
+            "none";
+
+
+        // Show final section
+
+        finalSection.style.display =
+            "block";
+
+
+        // Set final question
+
+        finalQuestion.textContent =
+            data.question;
+
+
+        // Set total votes
+
+        finalTotalVotes.textContent =
             data.totalVotes;
 
 
-        data.votes.forEach(
-            (vote, index) => {
+        // Create final results
 
-                const voteCount =
-                    document.getElementById(
-                        `vote-${index}`
+        finalResults.innerHTML =
+            "";
+
+
+        data.options.forEach(
+            (option, index) => {
+
+                const resultItem =
+                    document.createElement(
+                        "div"
                     );
 
 
-                const voteBar =
-                    document.getElementById(
-                        `bar-${index}`
-                    );
+                resultItem.className =
+                    "result-item";
 
 
-                if (voteCount) {
-
-                    voteCount.textContent =
-                        vote;
-
-                }
-
-
-                if (voteBar) {
-
-                    const percentage =
-                        data.totalVotes === 0
-                            ? 0
-                            : (
-                                vote /
-                                data.totalVotes
-                            ) * 100;
-
-
-                    voteBar.style.width =
-                        `${percentage}%`;
-
-                }
-
-
-                // Highlight winner
                 if (
-                    index === data.winnerIndex &&
+                    index ===
+                    data.winnerIndex &&
                     data.totalVotes > 0
                 ) {
 
-                    const resultItem =
-                        voteBar
-                            .parentElement
-                            .parentElement;
-
-
-                    resultItem.style.fontWeight =
-                        "bold";
-
-
-                    resultItem.style.border =
-                        "2px solid #16a34a";
-
-
-                    resultItem.style.padding =
-                        "10px";
-
-
-                    resultItem.style.borderRadius =
-                        "8px";
-
-
-                    const winnerLabel =
-                        document.createElement(
-                            "p"
-                        );
-
-
-                    winnerLabel.textContent =
-                        "Winner";
-
-
-                    winnerLabel.style.marginTop =
-                        "5px";
-
-
-                    winnerLabel.style.color =
-                        "#16a34a";
-
-
-                    resultItem.appendChild(
-                        winnerLabel
+                    resultItem.classList.add(
+                        "winner"
                     );
 
                 }
+
+
+                let percentage =
+                    0;
+
+
+                if (
+                    data.totalVotes > 0
+                ) {
+
+                    percentage =
+                        (
+                            data.votes[index] /
+                            data.totalVotes
+                        ) * 100;
+
+                }
+
+
+                resultItem.innerHTML =
+                    `
+
+                    <div class="result-header">
+
+                        <span>
+                            ${escapeHtml(option)}
+                        </span>
+
+                        <strong>
+                            ${data.votes[index]}
+                        </strong>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                            class="bar"
+                            style="width: ${percentage}%;"
+                        ></div>
+
+                    </div>
+
+                    `;
+
+
+                if (
+                    index ===
+                    data.winnerIndex &&
+                    data.totalVotes > 0
+                ) {
+
+                    const winnerText =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    winnerText.className =
+                        "winner-label";
+
+
+                    winnerText.textContent =
+                        "Winner";
+
+
+                    resultItem.appendChild(
+                        winnerText
+                    );
+
+                }
+
+
+                finalResults.appendChild(
+                    resultItem
+                );
 
             }
         );
 
 
-        endPollButton.disabled =
-            true;
-
-
-        endPollButton.textContent =
-            "Poll Ended";
-
-
-        startPollButton.disabled =
-            true;
+        console.log(
+            "Final results displayed."
+        );
 
     }
 );
-function startCountdown(seconds) {
-    clearInterval(timerInterval);
 
-    let remaining = seconds;
 
-    function updateTimer() {
-        const minutes = Math.floor(remaining / 60);
-        const secondsLeft = remaining % 60;
+// ======================================
+// SOCKET CONNECTION
+// ======================================
 
-        timerDisplay.textContent =
-            `${String(minutes).padStart(2, "0")}:${String(secondsLeft).padStart(2, "0")}`;
+socket.on(
+    "connect",
+    () => {
 
-        if (remaining <= 10) {
-            timerDisplay.classList.add("danger");
-            timerDisplay.classList.remove("warning");
-        } else if (remaining <= 20) {
-            timerDisplay.classList.add("warning");
-            timerDisplay.classList.remove("danger");
-        } else {
-            timerDisplay.classList.remove("warning");
-            timerDisplay.classList.remove("danger");
-        }
+        console.log(
+            "Connected to server:",
+            socket.id
+        );
 
-        if (remaining <= 0) {
-            clearInterval(timerInterval);
-            timerDisplay.textContent = "00:00";
-            return;
-        }
-
-        remaining--;
     }
+);
 
-    updateTimer();
-    timerInterval = setInterval(updateTimer, 1000);
-}
+
+// ======================================
+// SOCKET DISCONNECT
+// ======================================
+
+socket.on(
+    "disconnect",
+    () => {
+
+        console.log(
+            "Disconnected from server."
+        );
+
+    }
+);
+
+
+// ======================================
+// INITIAL SETUP
+// ======================================
+
+updateRemoveButtons();
+
+console.log(
+    "Admin JavaScript loaded successfully."
+);

@@ -10,9 +10,12 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Admin Dashboard - PulseVote</title>
+    <title>Admin - Live Polling Quiz</title>
 
-    <link rel="stylesheet" href="/style.css">
+    <link
+        rel="stylesheet"
+        href="/style.css"
+    >
 
 </head>
 
@@ -21,315 +24,432 @@
 
     <div class="container">
 
+        <!-- =================================
+             HEADER
+        ================================== -->
 
-        <!-- CREATE POLL SECTION -->
+        <header class="page-header">
 
-        <div id="createSection">
+            <h1>Live Polling Quiz</h1>
 
-            <p
-                style="
-                    text-align: center;
-                    color: #94a3b8;
-                    margin-bottom: 8px;
-                    font-size: 13px;
-                    font-weight: 700;
-                    letter-spacing: 2px;
-                "
-            >
-                ADMIN DASHBOARD
+            <p>
+                Admin Control Panel
             </p>
 
-
-            <h1>
-                Create a Poll
-            </h1>
+        </header>
 
 
-            <p
-                style="
-                    text-align: center;
-                    margin-bottom: 25px;
-                "
-            >
-                Create a live poll and share the
-                room code with participants.
-            </p>
+        <!-- =================================
+             POLL CREATION
+        ================================== -->
 
+        <section
+            id="createSection"
+            class="card"
+        >
+
+            <h2>Create New Poll</h2>
 
             <form id="pollForm">
 
+                <div class="form-group">
 
-                <!-- QUESTION -->
+                    <label for="question">
+                        Question
+                    </label>
 
-                <label for="question">
-                    Question
-                </label>
-
-                <input
-                    type="text"
-                    id="question"
-                    placeholder="Enter your question"
-                    required
-                >
-
-
-                <!-- OPTIONS -->
-
-                <h3>
-                    Answer Options
-                </h3>
-
-
-                <div id="optionsContainer">
-
-
-                    <div class="option-row">
-
-                        <input
-                            type="text"
-                            class="option-input"
-                            placeholder="Option 1"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="option-row">
-
-                        <input
-                            type="text"
-                            class="option-input"
-                            placeholder="Option 2"
-                            required
-                        >
-
-                    </div>
-
+                    <input
+                        type="text"
+                        id="question"
+                        placeholder="Enter your question"
+                        required
+                    >
 
                 </div>
 
 
-                <!-- ADD OPTION -->
+                <!-- OPTIONS -->
+
+                <div class="form-group">
+
+                    <label>
+                        Answer Options
+                    </label>
+
+                    <div id="optionsContainer">
+
+                        <div class="option-row">
+
+                            <input
+                                type="text"
+                                class="option-input"
+                                placeholder="Option 1"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="remove-option"
+                            >
+                                Remove
+                            </button>
+
+                        </div>
+
+
+                        <div class="option-row">
+
+                            <input
+                                type="text"
+                                class="option-input"
+                                placeholder="Option 2"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="remove-option"
+                            >
+                                Remove
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
 
                 <button
                     type="button"
                     id="addOption"
+                    class="secondary-button"
                 >
                     + Add Option
                 </button>
 
 
-                <!-- CREATE -->
-
-                <button type="submit">
-                    Create Live Poll
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Create Poll
                 </button>
-
 
             </form>
 
-
-            <div id="message"></div>
-
-        </div>
+        </section>
 
 
 
-        <!-- WAITING ROOM -->
+        <!-- =================================
+             WAITING ROOM
+        ================================== -->
 
-        <div
-            id="waitingRoom"
+        <section
+            id="waitingSection"
+            class="card"
             style="display: none;"
         >
 
-            <hr>
+            <div class="waiting-header">
+
+                <h2>Waiting Room</h2>
+
+                <p>
+                    Share this room code with participants.
+                </p>
+
+            </div>
 
 
-            <p
-                style="
-                    text-align: center;
-                    color: #94a3b8;
-                    font-size: 13px;
-                    font-weight: 700;
-                    letter-spacing: 2px;
-                "
-            >
-                POLL CREATED
-            </p>
+            <!-- ROOM CODE -->
+
+            <div class="room-code-box">
+
+                <p>
+                    Room Code
+                </p>
+
+                <div id="roomCode">
+                    ------
+                </div>
+
+                <button
+                    id="copyRoomCode"
+                    class="secondary-button"
+                    type="button"
+                >
+                    Copy Room Code
+                </button>
+
+            </div>
 
 
-            <h2
-                style="
-                    text-align: center;
-                    margin-top: 8px;
-                "
-            >
-                Waiting Room
-            </h2>
+            <!-- PARTICIPANT COUNT -->
 
+            <div class="participant-count-box">
 
-            <p
-                style="
-                    text-align: center;
-                "
-            >
-                Share this room code with participants.
-            </p>
+                <span class="count-label">
+                    Participants Joined
+                </span>
 
-
-            <p
-                style="
-                    text-align: center;
-                    margin-top: 20px;
-                "
-            >
-                ROOM CODE
-            </p>
-
-
-            <h1 id="roomCodeDisplay">
-                ------
-            </h1>
-
-
-            <p
-                style="
-                    text-align: center;
-                    margin-top: 15px;
-                "
-            >
-                Participants Joined
-            </p>
-
-
-            <p
-                style="
-                    text-align: center;
-                    font-size: 28px;
-                    margin-top: 5px;
-                "
-            >
-                <strong id="participantCount">
+                <span
+                    id="participantCount"
+                    class="participant-count"
+                >
                     0
-                </strong>
-            </p>
-            <div id="participantListSection">
+                </span>
 
-    <p style="margin-top: 20px;">
-        Participants
-    </p>
+            </div>
 
-    <div id="participantList">
-        <p>No participants joined yet.</p>
-    </div>
 
-    </div>
+            <!-- PARTICIPANT LIST -->
 
-    <label for="timerDuration">
-        Voting Time (seconds)
-    </label>
+            <div class="participant-list-box">
 
-    <input
-        type="number"
-        id="timerDuration"
-        min="10"
-        max="300"
-        value="30"
-        placeholder="30"
-    >
+                <h3>
+                    Participants
+                </h3>
 
-            <button id="startPoll">
+                <div
+                    id="participantList"
+                    class="participant-list"
+                >
+
+                    <p class="empty-participants">
+                        Waiting for participants to join...
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- QUESTION PREVIEW -->
+
+            <div class="poll-preview">
+
+                <h3>
+                    Question
+                </h3>
+
+                <p id="previewQuestion">
+                    -
+                </p>
+
+
+                <h3>
+                    Options
+                </h3>
+
+                <div id="previewOptions">
+                    <!-- Options appear here -->
+                </div>
+
+            </div>
+
+
+            <!-- TIMER -->
+
+            <div class="timer-settings">
+
+                <label for="timerDuration">
+                    Voting Time (seconds)
+                </label>
+
+                <input
+                    type="number"
+                    id="timerDuration"
+                    min="10"
+                    max="300"
+                    value="30"
+                >
+
+                <p>
+                    Minimum 10 seconds, maximum 300 seconds.
+                </p>
+
+            </div>
+
+
+            <!-- BEGIN BUTTON -->
+
+            <button
+                id="startPoll"
+                class="primary-button start-button"
+                type="button"
+            >
                 Begin Voting
             </button>
 
-
-        </div>
-
+        </section>
 
 
-        <!-- LIVE RESULTS -->
 
-        <div
-            id="results"
+        <!-- =================================
+             LIVE POLL
+        ================================== -->
+
+        <section
+            id="liveSection"
+            class="card"
             style="display: none;"
         >
 
-            <hr>
+            <div class="live-header">
+
+                <span class="live-badge">
+                    LIVE
+                </span>
+
+                <h2>
+                    Voting in Progress
+                </h2>
+
+            </div>
 
 
-            <p
-                style="
-                    text-align: center;
-                    color: #94a3b8;
-                    font-size: 13px;
-                    font-weight: 700;
-                    letter-spacing: 2px;
-                "
-            >
-                LIVE POLL
-            </p>
+            <!-- TIMER -->
 
-
-            <h2
-                style="
-                    text-align: center;
-                    margin-top: 8px;
-                "
-            >
-                Live Results
-            </h2>
-            
             <div id="timerDisplay">
                 00:30
             </div>
 
 
-            <h3
-                id="resultsQuestion"
-                style="
-                    text-align: center;
-                    margin-top: 20px;
-                "
-            ></h3>
+            <!-- QUESTION -->
+
+            <div class="question-box">
+
+                <h3>
+                    Question
+                </h3>
+
+                <p id="liveQuestion">
+                    -
+                </p>
+
+            </div>
 
 
-            <div id="resultsContainer"></div>
+            <!-- RESULTS -->
+
+            <div class="results-box">
+
+                <div class="results-heading">
+
+                    <h3>
+                        Live Results
+                    </h3>
+
+                    <p>
+                        Total Votes:
+                        <strong id="totalVotes">
+                            0
+                        </strong>
+                    </p>
+
+                </div>
 
 
-            <p
-                style="
-                    text-align: center;
-                    margin-top: 25px;
-                "
+                <div id="results">
+                    <!-- Results generated by JavaScript -->
+                </div>
+
+            </div>
+
+
+            <!-- END POLL -->
+
+            <button
+                id="endPoll"
+                class="danger-button"
+                type="button"
             >
-                Total Votes:
-                <strong id="totalVotes">
-                    0
-                </strong>
-            </p>
-
-
-            <button id="endPoll">
                 End Poll
             </button>
 
+        </section>
 
-        </div>
 
+
+        <!-- =================================
+             FINAL RESULTS
+        ================================== -->
+
+        <section
+            id="finalSection"
+            class="card"
+            style="display: none;"
+        >
+
+            <h2>
+                Poll Ended
+            </h2>
+
+            <p class="final-message">
+                Voting has ended. Final results are shown below.
+            </p>
+
+
+            <div class="final-question">
+
+                <h3>
+                    Question
+                </h3>
+
+                <p id="finalQuestion">
+                    -
+                </p>
+
+            </div>
+
+
+            <div class="results-box">
+
+                <div class="results-heading">
+
+                    <h3>
+                        Final Results
+                    </h3>
+
+                    <p>
+                        Total Votes:
+                        <strong id="finalTotalVotes">
+                            0
+                        </strong>
+                    </p>
+
+                </div>
+
+
+                <div id="finalResults">
+                    <!-- Final results generated by JavaScript -->
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="secondary-button"
+                onclick="location.reload()"
+            >
+                Create New Poll
+            </button>
+
+        </section>
 
     </div>
 
 
-
-    <!-- SOCKET.IO -->
+    <!-- Socket.IO -->
 
     <script src="/socket.io/socket.io.js"></script>
 
-    <!-- ADMIN JAVASCRIPT -->
+    <!-- Admin JavaScript -->
 
     <script src="/admin.js"></script>
-
 
 </body>
 
