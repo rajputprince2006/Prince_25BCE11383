@@ -1,24 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Polling Quiz</title>
+
+    <title>PulseVote - Live Polling</title>
+
+    <link rel="stylesheet" href="/style.css">
+
+    <style>
+        .home-container {
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 52px;
+            font-weight: 800;
+            margin-bottom: 10px;
+
+            background: linear-gradient(
+                90deg,
+                #a78bfa,
+                #60a5fa
+            );
+
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            font-size: 18px;
+            color: #cbd5e1;
+            margin-bottom: 35px;
+        }
+
+        .home-buttons {
+            display: grid;
+            gap: 15px;
+        }
+
+        .home-button {
+            text-decoration: none;
+            display: block;
+
+            padding: 16px;
+
+            border-radius: 14px;
+
+            color: white;
+
+            font-weight: 700;
+
+            background: linear-gradient(
+                135deg,
+                #7c3aed,
+                #2563eb
+            );
+
+            transition: 0.25s;
+        }
+
+        .home-button:hover {
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 12px 30px
+                rgba(37, 99, 235, 0.35);
+        }
+
+        .home-button.secondary {
+            background:
+                rgba(255, 255, 255, 0.08);
+
+            border:
+                1px solid
+                rgba(255, 255, 255, 0.15);
+        }
+
+        .features {
+            margin-top: 35px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 12px;
+        }
+
+        .feature {
+            padding: 18px 10px;
+
+            border-radius: 14px;
+
+            background:
+                rgba(255, 255, 255, 0.05);
+
+            border:
+                1px solid
+                rgba(255, 255, 255, 0.08);
+        }
+
+        .feature strong {
+            display: block;
+
+            color: #a78bfa;
+
+            margin-bottom: 5px;
+        }
+
+        .feature span {
+            font-size: 13px;
+
+            color: #94a3b8;
+        }
+
+        .footer {
+            margin-top: 30px;
+
+            font-size: 12px;
+
+            color: #64748b;
+        }
+
+        @media (max-width: 600px) {
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .logo {
+                font-size: 42px;
+            }
+
+        }
+    </style>
+
 </head>
 
 <body>
 
-    <h1>Live Polling Quiz</h1>
+    <div class="container home-container">
 
-    <p>Welcome to the Live Polling Application</p>
+        <div class="logo">
+            PulseVote
+        </div>
 
-    <button onclick="location.href='admin.html'">
-        Admin
-    </button>
+        <p class="tagline">
+            Create. Vote. See results live.
+        </p>
 
-    <button onclick="location.href='participant.html'">
-        Participant
-    </button>
+
+        <div class="home-buttons">
+
+            <a
+                href="/admin.html"
+                class="home-button"
+            >
+                Create a Poll
+            </a>
+
+            <a
+                href="/participant.html"
+                class="home-button secondary"
+            >
+                Join a Poll
+            </a>
+
+        </div>
+
+
+        <div class="features">
+
+            <div class="feature">
+
+                <strong>LIVE</strong>
+
+                <span>
+                    Real-time voting
+                </span>
+
+            </div>
+
+
+            <div class="feature">
+
+                <strong>FAST</strong>
+
+                <span>
+                    Instant results
+                </span>
+
+            </div>
+
+
+            <div class="feature">
+
+                <strong>EASY</strong>
+
+                <span>
+                    Simple room codes
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer">
+
+            Live Polling & Quiz Platform
+
+        </div>
+
+    </div>
 
 </body>
+
 </html>

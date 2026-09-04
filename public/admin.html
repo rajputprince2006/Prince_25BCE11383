@@ -1,68 +1,309 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Live Polling Quiz</title>
-    <link rel="stylesheet" href="style.css">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Admin Dashboard - PulseVote</title>
+
+    <link rel="stylesheet" href="/style.css">
+
 </head>
+
 
 <body>
 
     <div class="container">
 
-        <h1>Create a Poll</h1>
 
-        <form id="pollForm">
+        <!-- CREATE POLL SECTION -->
 
-            <label for="question">Question</label>
+        <div id="createSection">
 
-            <input
-                type="text"
-                id="question"
-                placeholder="Enter your question"
-                required
+            <p
+                style="
+                    text-align: center;
+                    color: #94a3b8;
+                    margin-bottom: 8px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    letter-spacing: 2px;
+                "
             >
+                ADMIN DASHBOARD
+            </p>
 
-            <h3>Answer Options</h3>
 
-            <div id="optionsContainer">
+            <h1>
+                Create a Poll
+            </h1>
 
-                <div class="option-row">
-                    <input
-                        type="text"
-                        class="option-input"
-                        placeholder="Option 1"
-                        required
-                    >
+
+            <p
+                style="
+                    text-align: center;
+                    margin-bottom: 25px;
+                "
+            >
+                Create a live poll and share the
+                room code with participants.
+            </p>
+
+
+            <form id="pollForm">
+
+
+                <!-- QUESTION -->
+
+                <label for="question">
+                    Question
+                </label>
+
+                <input
+                    type="text"
+                    id="question"
+                    placeholder="Enter your question"
+                    required
+                >
+
+
+                <!-- OPTIONS -->
+
+                <h3>
+                    Answer Options
+                </h3>
+
+
+                <div id="optionsContainer">
+
+
+                    <div class="option-row">
+
+                        <input
+                            type="text"
+                            class="option-input"
+                            placeholder="Option 1"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="option-row">
+
+                        <input
+                            type="text"
+                            class="option-input"
+                            placeholder="Option 2"
+                            required
+                        >
+
+                    </div>
+
+
                 </div>
 
-                <div class="option-row">
-                    <input
-                        type="text"
-                        class="option-input"
-                        placeholder="Option 2"
-                        required
-                    >
-                </div>
 
-            </div>
+                <!-- ADD OPTION -->
 
-            <button type="button" id="addOption">
-                + Add Option
+                <button
+                    type="button"
+                    id="addOption"
+                >
+                    + Add Option
+                </button>
+
+
+                <!-- CREATE -->
+
+                <button type="submit">
+                    Create Live Poll
+                </button>
+
+
+            </form>
+
+
+            <div id="message"></div>
+
+        </div>
+
+
+
+        <!-- WAITING ROOM -->
+
+        <div
+            id="waitingRoom"
+            style="display: none;"
+        >
+
+            <hr>
+
+
+            <p
+                style="
+                    text-align: center;
+                    color: #94a3b8;
+                    font-size: 13px;
+                    font-weight: 700;
+                    letter-spacing: 2px;
+                "
+            >
+                POLL CREATED
+            </p>
+
+
+            <h2
+                style="
+                    text-align: center;
+                    margin-top: 8px;
+                "
+            >
+                Waiting Room
+            </h2>
+
+
+            <p
+                style="
+                    text-align: center;
+                "
+            >
+                Share this room code with participants.
+            </p>
+
+
+            <p
+                style="
+                    text-align: center;
+                    margin-top: 20px;
+                "
+            >
+                ROOM CODE
+            </p>
+
+
+            <h1 id="roomCodeDisplay">
+                ------
+            </h1>
+
+
+            <p
+                style="
+                    text-align: center;
+                    margin-top: 15px;
+                "
+            >
+                Participants Joined
+            </p>
+
+
+            <p
+                style="
+                    text-align: center;
+                    font-size: 28px;
+                    margin-top: 5px;
+                "
+            >
+                <strong id="participantCount">
+                    0
+                </strong>
+            </p>
+
+
+            <button id="startPoll">
+                Begin Voting
             </button>
 
-            <button type="submit">
-                Create Poll
+
+        </div>
+
+
+
+        <!-- LIVE RESULTS -->
+
+        <div
+            id="results"
+            style="display: none;"
+        >
+
+            <hr>
+
+
+            <p
+                style="
+                    text-align: center;
+                    color: #94a3b8;
+                    font-size: 13px;
+                    font-weight: 700;
+                    letter-spacing: 2px;
+                "
+            >
+                LIVE POLL
+            </p>
+
+
+            <h2
+                style="
+                    text-align: center;
+                    margin-top: 8px;
+                "
+            >
+                Live Results
+            </h2>
+
+
+            <h3
+                id="resultsQuestion"
+                style="
+                    text-align: center;
+                    margin-top: 20px;
+                "
+            ></h3>
+
+
+            <div id="resultsContainer"></div>
+
+
+            <p
+                style="
+                    text-align: center;
+                    margin-top: 25px;
+                "
+            >
+                Total Votes:
+                <strong id="totalVotes">
+                    0
+                </strong>
+            </p>
+
+
+            <button id="endPoll">
+                End Poll
             </button>
 
-        </form>
 
-        <div id="message"></div>
+        </div>
+
 
     </div>
 
-    <script src="admin.js"></script>
+
+
+    <!-- SOCKET.IO -->
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- ADMIN JAVASCRIPT -->
+
+    <script src="/admin.js"></script>
+
 
 </body>
+
 </html>
