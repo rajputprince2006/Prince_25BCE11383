@@ -325,44 +325,61 @@ socket.on("participantList", (data) => {
 // BEGIN VOTING
 // ======================================
 
-startPollButton.addEventListener(
-    "click",
-    () => {
+const timerDuration =
+    document.getElementById("timerDuration");
 
-        if (!currentRoomCode) {
-            return;
-        }
+const timerDisplay =
+    document.getElementById("timerDisplay");
 
-
-        socket.emit(
-            "startPoll",
-            {
-                roomCode:
-                    currentRoomCode
-            }
-        );
+let timerInterval = null;
 
 
-        startPollButton.disabled =
-            true;
+startPollButton.addEventListener("click", () => {
 
-
-        startPollButton.textContent =
-            "Voting Started";
-
-
-        results.style.display =
-            "block";
-
-
-        resultsQuestion.textContent =
-            "Live voting results";
-
-
-        createResultBars();
-
+    if (!currentRoomCode) {
+        return;
     }
-);
+
+    let duration =
+        Number(timerDuration.value);
+
+    if (!Number.isFinite(duration)) {
+        duration = 30;
+    }
+
+    if (duration < 10) {
+        duration = 10;
+    }
+
+    if (duration > 300) {
+        duration = 300;
+    }
+
+    socket.emit("startPoll", {
+        roomCode: currentRoomCode,
+        duration: duration
+    });
+
+    startPollButton.disabled = true;
+    startPollButton.textContent =
+        "Voting Started";
+
+    timerDuration.disabled = true;
+
+    results.style.display = "block";
+
+    resultsQuestion.textContent =
+        "Live voting results";
+
+    createResultBars();
+
+});
+
+
+socket.on("pollStarted", (data) => {
+    startCountdown(data.duration);
+});
+
 
 
 // ======================================
@@ -644,3 +661,38 @@ socket.on(
 
     }
 );
+function startCountdown(seconds) {
+    clearInterval(timerInterval);
+
+    let remaining = seconds;
+
+    function updateTimer() {
+        const minutes = Math.floor(remaining / 60);
+        const secondsLeft = remaining % 60;
+
+        timerDisplay.textContent =
+            `${String(minutes).padStart(2, "0")}:${String(secondsLeft).padStart(2, "0")}`;
+
+        if (remaining <= 10) {
+            timerDisplay.classList.add("danger");
+            timerDisplay.classList.remove("warning");
+        } else if (remaining <= 20) {
+            timerDisplay.classList.add("warning");
+            timerDisplay.classList.remove("danger");
+        } else {
+            timerDisplay.classList.remove("warning");
+            timerDisplay.classList.remove("danger");
+        }
+
+        if (remaining <= 0) {
+            clearInterval(timerInterval);
+            timerDisplay.textContent = "00:00";
+            return;
+        }
+
+        remaining--;
+    }
+
+    updateTimer();
+    timerInterval = setInterval(updateTimer, 1000);
+}
